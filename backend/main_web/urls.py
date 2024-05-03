@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.urls import path,include
 from django.views.generic import TemplateView
+from .views import *
+from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('home', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('accounts/profile/', RedirectView.as_view(url='http://127.0.0.1:8000/home', permanent=True)),
+    path('home',home)
 ]

@@ -146,11 +146,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
+     'allauth.account.auth_backends.AuthenticationBackend',
    
     'django.contrib.auth.backends.ModelBackend',
 
    
-    'allauth.account.auth_backends.AuthenticationBackend',
    
 ]
 SOCIALACCOUNT_PROVIDERS = {
@@ -165,3 +165,4 @@ SOCIALACCOUNT_PROVIDERS = {
         'OAUTH_PKCE_ENABLED': True,
     }
 }
+
