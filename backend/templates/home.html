@@ -1,2 +1,19 @@
-<h1>library homepage</h1>
-<h1 class="display-4 text-white fw-bold">Welcome !</h1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book List</title>
+</head>
+<body>
+    <h2>Welcome {{ name}}</h2 >
+    <h1>Book List</h1>
+    <ul>
+        {% for book in books %}
+            <li>{{ book.title }} by {{ book.author }}</li>
+        {% empty %}
+            <li>No books available</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
