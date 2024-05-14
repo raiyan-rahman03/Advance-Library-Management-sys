@@ -1,7 +1,26 @@
 from rest_framework import serializers
-from .models import Book
+from .models import *
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = '__all__' 
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = '__all__' 
 
 class BookSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
+    genre = GenreSerializer()
+
     class Meta:
         model = Book
-        fields = ('id', 'title', 'author', 'publisher' ,'description')  # Add more fields as needed
+        fields = '__all__'
+        
+  # Include all fields of the Book model
+class borrow_ser(serializers.ModelSerializer):
+    class Meta:
+        model = Borrow
+        fields = ['book','borrowed_at','due_back']

@@ -4,16 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            padding-top: 50px;
+        }
+        .book-card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .btn {
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Welcome {{ name}}</h2 >
-    <h1>Book List</h1>
-    <ul>
-        {% for book in books %}
-            <li>{{ book.title }} by {{ book.author }}</li>
-        {% empty %}
-            <li>No books available</li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <h2>Welcome {{ name }}</h2>
+        <h1>Book List</h1>
+        <div class="row">
+            {% for book in books %}
+            <div class="col-md-4">
+                <div class="card book-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text">by {{ book.author.name }}</p> <!-- Use book.author.name instead of book.author -->
+                        <p class="card-text"><strong>Genre:</strong> {{ book.genre.name }}</p>
+                        <p class="card-text"><strong>Publisher:</strong> {{ book.publisher }}</p>
+    
+                        <div class="btn-group" role="group" aria-label="Book Actions">
+
+                            <a href="{% url 'single_book' pk=book.id %}" class="btn btn-info">See More</a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col">
+                <p>No books available</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </body>
 </html>

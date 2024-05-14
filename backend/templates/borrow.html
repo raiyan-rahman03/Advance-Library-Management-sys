@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Book</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="mb-4">Borrow Book</h2>
+    <form id="borrowBookForm" method="post" action="http://127.0.0.1:8000/borrow">
+        {% csrf_token %}
+        <!-- Use the 'id' variable directly as the value -->
+        <input type="hidden" id="book" name="book" value="{{ id }}">
+        
+        <div class="form-group">
+            <label for="due_back">Due Date:</label>
+            <input type="datetime-local" id="due_back" name="due_back" class="form-control" required>
+        </div>
+        
+        <input type="submit" value="Borrow Book" class="btn btn-primary">
+    </form>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('borrowBookForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            fetch('http://127.0.0.1:8000/borrow', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message
+                    alert('Your book is borrowed successfully. Explore other books now.');
+                    // Redirect to the home page
+                    window.location.href = 'http://127.0.0.1:8000/home';
+                } else {
+                    alert('Failed to borrow book');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to borrow book');
+            });
+        });
+    });
+    </script>
+    
+</body>
+</html>

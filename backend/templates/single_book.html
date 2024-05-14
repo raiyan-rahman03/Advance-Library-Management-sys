@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Details - A Literary Oasis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evSXbVzTVFTJwvtQveJjxqCzos2+wYEpuywKlPXaR5cOE93lLE-8cAylkVLCU" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa; /* Light background */
+    }
+
+    /* Container Styles */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Book Details Card Styles */
+    .book-card {
+      background-color: #fff; /* White card background */
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+      overflow: hidden; /* Prevent image overflow */
+      display: flex; /* Arrange content side-by-side */
+    }
+
+    .book-card-image {
+      flex: 0 0 200px; /* Set image width */
+      background-size: cover; /* Ensure image fills container */
+      background-position: center; /* Center image */
+    }
+
+    .book-card-content {
+      flex: 1 1 auto; /* Allow content area to expand */
+      padding: 2rem;
+    }
+
+    .detail-label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #000000; /* Darker text color */
+    }
+
+    .detail-value {
+      margin-bottom: 20px;
+      color: #000000; /* Lighter text color */
+    }
+
+    /* Author and Genre Details Styles */
+    .author-details,
+    .genre-details {
+      border-left: 2px solid #007bff; /* Border color */
+      padding-left: 1rem;
+      margin-top: 20px;
+    }
+
+    /* Genre Description Styling */
+    .genre-details .detail-value:nth-child(2) { /* Target second detail-value */
+      font-style: italic;
+    }
+
+    /* Optional Link Styles */
+    a {
+      color: #007bff; /* Blue link color */
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    a:hover {
+      color: #0056b3; /* Darker blue on hover */
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">Book Details - {{ data.title }}</h1>
+
+    <div class="book-card">
+      <div class="book-card-image" style="background-image: url('{{ data.image_url }}');">
+      </div>
+
+      <div class="book-card-content">
+        <div class="detail-label">Title:</div>
+        <div class="detail-value">{{ data.title }}</div>
+
+        <div class="detail-label">Author:</div>
+        <div class="detail-value">{{ data.author.name }}</div>
+
+        <div class="author-details">
+          <div class="detail-label">Author Biography:</div>
+          <div class="detail-value">{{ data.author.biography }}</div>
+          <div class="detail-label">Date of Birth:</div>
+          <div class="detail-value">{{ data.author.date_of_birth }}</div>
+          <div class="detail-label">Nationality:</div>
+          <div class="detail-value">{{ data.author.nationality }}</div>
+        </div>
+
+        <div class="detail-label">Genre:</div>
+        <div class="detail-value">{{ data.genre.name }}</div>
+
+        <div class="genre-details">
+          <div class="detail-label">Genre Description:</div>
+          <div class="detail-value">{{ data.genre.description }}</div>
+        </div>
+
+        <div class="detail-label">Description:</div>
+        <div class="detail-value">{{ data.description }}</div>
+
+        <div class="detail-label">Publisher:</div>
+        <div class="detail-value">{{ data.publisher }}</div>
+        <div class="text-center">
+          <a href="http://127.0.0.1:8000/home" class="btn btn-success">  Home  </a>
+          <a href="http://127.0.0.1:8000/borrow_f/{{ data.id }}" class="btn btn-danger">Borrow</a>
+          <a href="http://127.0.0.1:8000/#" class="btn btn-dark">  Buy  </a>
+
+        </div>
+      </div>
+     
+      
+    </div>
+
+  </div>
+</body>
+</html>

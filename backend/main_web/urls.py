@@ -11,4 +11,9 @@ urlpatterns = [
     path('book',Book_view.as_view()),
     path('add-book',Book_post.as_view()),
     path('add',book_add_func),
+    path('book/<int:pk>/', SingleBookAPIView.as_view(), name='single_book_api'),
+    path('book/about/<int:pk>/', single_book, name='single_book'),
+    path('borrow',Borrow_view.as_view()),
+    path('borrow_f/<int:pk>',borrow),
+
 ]
