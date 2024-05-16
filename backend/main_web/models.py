@@ -70,6 +70,9 @@ class Borrow(models.Model):
     def save(self, *args, **kwargs):
         self.clean()  # Ensure validation is performed before saving
         super().save(*args, **kwargs)
+        self.book.inventory -= 1
+        self.book.save()
+
 
     def __str__(self):
         return f"{self.book.title} borrowed by {self.member.user.username} on {self.borrowed_at}"

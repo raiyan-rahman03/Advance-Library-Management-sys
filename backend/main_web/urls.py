@@ -15,5 +15,7 @@ urlpatterns = [
     path('book/about/<int:pk>/', single_book, name='single_book'),
     path('borrow',Borrow_view.as_view()),
     path('borrow_f/<int:pk>',borrow),
+    path('return/<int:pk>', book_return),
+    path('re-template',return_html),
 
 ]

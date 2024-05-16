@@ -24,6 +24,16 @@
     </style>
 </head>
 <body>
+    {% if messages %}
+    <div class="alert-message">
+        {% for message in messages %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="container">
         <h2>Welcome {{ name }}</h2>
         <h1>Book List</h1>
@@ -33,14 +43,12 @@
                 <div class="card book-card">
                     <div class="card-body">
                         <h5 class="card-title">{{ book.title }}</h5>
-                        <p class="card-text">by {{ book.author.name }}</p> <!-- Use book.author.name instead of book.author -->
+                        <p class="card-text">by {{ book.author.name }}</p>
                         <p class="card-text"><strong>Genre:</strong> {{ book.genre.name }}</p>
                         <p class="card-text"><strong>Publisher:</strong> {{ book.publisher }}</p>
     
                         <div class="btn-group" role="group" aria-label="Book Actions">
-
                             <a href="{% url 'single_book' pk=book.id %}" class="btn btn-info">See More</a>
-
                         </div>
                     </div>
                 </div>
@@ -52,5 +60,17 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- JavaScript for displaying the pop-up message -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if the success message exists in the page
+            var successMessage = "{{ success_message }}";
+            if (successMessage) {
+                // Display the success message in a pop-up
+                alert(successMessage);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrowed Books</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .card-body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Borrowed Books</h1>
+        <div class="row">
+            {% for item in data %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        {{ item.book.title }}
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Author:</strong> {{ item.book.author.name }}</p>
+                        <p><strong>Borrowed At:</strong> {{ item.borrowed_at }}</p>
+                        <p><strong>Due Back:</strong> {{ item.due_back }}</p>
+                    </div>
+                    <a href="http://127.0.0.1:8000/return/{{ item.book.id }}" class="btn btn-danger">Return</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col">
+                <p>No books borrowed yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

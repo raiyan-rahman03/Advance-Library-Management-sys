@@ -23,4 +23,9 @@ class BookSerializer(serializers.ModelSerializer):
 class borrow_ser(serializers.ModelSerializer):
     class Meta:
         model = Borrow
-        fields = ['book','borrowed_at','due_back']
+        fields = ['due_back','book']
+
+class return_ser(serializers.ModelSerializer):
+    class Meta:
+        model = Borrow
+        fields = '__all__'
