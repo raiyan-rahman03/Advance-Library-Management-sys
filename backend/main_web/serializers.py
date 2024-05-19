@@ -19,11 +19,16 @@ class BookSerializer(serializers.ModelSerializer):
         model = Book
         fields = '__all__'
         
+class book_post(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['title','author','genre','publisher','inventory','description']
+
   # Include all fields of the Book model
 class borrow_ser(serializers.ModelSerializer):
     class Meta:
         model = Borrow
-        fields = ['due_back','book']
+        fields = ['book','borrowed_at','due_back']
 
 class return_ser(serializers.ModelSerializer):
     class Meta:

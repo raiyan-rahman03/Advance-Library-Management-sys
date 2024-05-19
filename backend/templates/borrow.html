@@ -47,12 +47,12 @@
         {% csrf_token %}
         <!-- Use the 'id' variable directly as the value -->
         <input type="hidden" id="book" name="book" value="{{ id }}">
-        
+
         <div class="form-group">
             <label for="due_back">Due Date:</label>
             <input type="datetime-local" id="due_back" name="due_back" class="form-control" required>
         </div>
-        
+
         <input type="submit" value="Borrow Book" class="btn btn-primary">
     </form>
 </div>
@@ -81,6 +81,6 @@
         });
     });
     </script>
-    
+
 </body>
 </html>

@@ -49,8 +49,13 @@
             </div>
             {% empty %}
             <div class="col">
-                <p>No books borrowed yet.</p>
+                <p>No books borrowed yet</p>
+                <div>
+                
+                    <a href="http://127.0.0.1:8000/home" class="btn btn-danger">Explore Books</a>
+                </div>
             </div>
+
             {% endfor %}
         </div>
     </div>

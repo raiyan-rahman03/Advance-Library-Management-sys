@@ -21,6 +21,12 @@
         .btn {
             margin-right: 10px;
         }
+        /* Custom CSS for positioning */
+        .return-btn-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
     </style>
 </head>
 <body>
@@ -36,17 +42,31 @@
 
     <div class="container">
         <h2>Welcome {{ name }}</h2>
+        <!-- Return a Book button in the top-right corner -->
+
         <h1>Book List</h1>
-        <div class="row">
+        <div class="return-btn-container">
+            <a href="http://127.0.0.1:8000/add" class="btn btn-primary">Add a Book</a> <!-- New button -->
+            <a href="http://127.0.0.1:8000/re-template" class="btn btn-danger">Return a Book</a>
+        </div>
+
+        <!-- Search form -->
+        <form id="search-form" class="form-inline mb-4">
+            <!-- Increase the size of the input field -->
+            <input id="search-input" class="form-control mr-sm-2" type="search" placeholder="Search By Title , Author , Genre , Publisher" style="width: 400px;" aria-label="Search">
+            <!-- The rest of your form remains unchanged -->
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+
+        <div class="row" id="books-container">
             {% for book in books %}
-            <div class="col-md-4">
+            <div class="col-md-4 book-item">
                 <div class="card book-card">
                     <div class="card-body">
                         <h5 class="card-title">{{ book.title }}</h5>
                         <p class="card-text">by {{ book.author.name }}</p>
                         <p class="card-text"><strong>Genre:</strong> {{ book.genre.name }}</p>
                         <p class="card-text"><strong>Publisher:</strong> {{ book.publisher }}</p>
-    
                         <div class="btn-group" role="group" aria-label="Book Actions">
                             <a href="{% url 'single_book' pk=book.id %}" class="btn btn-info">See More</a>
                         </div>
@@ -61,16 +81,58 @@
         </div>
     </div>
 
-    <!-- JavaScript for displaying the pop-up message -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Check if the success message exists in the page
-            var successMessage = "{{ success_message }}";
-            if (successMessage) {
-                // Display the success message in a pop-up
-                alert(successMessage);
+    <!-- JavaScript for displaying the pop-up message and handling search -->
+<!-- JavaScript for displaying the pop-up message and handling search -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Handle the search form submission
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const booksContainer = document.getElementById('books-container');
+
+        searchForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = searchInput.value.trim(); // Trim the search query
+            if (query !== '') { // Check if the search query is not empty
+                fetch(`http://127.0.0.1:8000/book?search=${query}`) // Corrected endpoint
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        booksContainer.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(book => {
+                                booksContainer.innerHTML += `
+                                    <div class="col-md-4 book-item">
+                                        <div class="card book-card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">${book.title}</h5>
+                                                <p class="card-text">by ${book.author.name}</p>
+                                                <p class="card-text"><strong>Genre:</strong> ${book.genre.name}</p>
+                                                <p class="card-text"><strong>Publisher:</strong> ${book.publisher}</p>
+                                                <div class="btn-group" role="group" aria-label="Book Actions">
+                                                    <a href="/book/about/${book.id}/" class="btn btn-info">See More</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            booksContainer.innerHTML = '<div class="col"><p>No books available</p></div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                    });
             }
         });
-    </script>
+    });
+</script>
+
+
 </body>
 </html>

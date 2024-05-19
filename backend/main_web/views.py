@@ -1,38 +1,55 @@
 from django.db.models import F
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
-from .serializers import BookSerializer
 from .models import Book
 from django.shortcuts import render, redirect
-from django.views import generic
-from rest_framework import generics
+from rest_framework import generics, filters
 from .models import *
 from .serializers import *
 from rest_framework import status
 from rest_framework.response import Response
 import requests
 from django.http import HttpResponseNotFound
+from rest_framework.request import Request
 
-# Create your views hee.
+
+
+from django.shortcuts import render
+from rest_framework.test import APIRequestFactory
 
 
 def home(request):
-    books_data = Book_view.as_view()(request).data
+    # Step 1: Retrieve the search query from the URL parameters
+    search_query = request.GET.get('search', '')
+
+    # Step 2: Create an API request factory
+    factory = APIRequestFactory()
+
+    # Step 3: Create a DRF request with the search query
+    drf_request = factory.get('/book/', {'search': search_query})
+
+    # Step 4: Call the DRF view with the DRF request and retrieve the filtered data
+    books_data = Book_view.as_view()(drf_request).data
+
+    # Step 5: Get the username of the logged-in user
     user_name = request.user.username
 
-    # Pass the serialized data to the template context
+    # Step 6: Pass the serialized data and username to the template context
     return render(request, 'home.html', {'books': books_data, 'name': user_name})
+
 
 
 class Book_view(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ['title', 'author__name', 'genre__name','publisher']
+    ordering_fields = ['title', 'author__name', 'genre__name']
 
 
 class Book_post(generics.CreateAPIView):
     queryset = Book.objects.all()
-    serializer_class = BookSerializer
+    serializer_class = book_post
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
