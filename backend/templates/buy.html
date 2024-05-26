@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Book</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        .btn {
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="mb-4">Buy Book</h2>
+    <form id="buyBookForm">
+        <!-- Use the 'id' variable directly as the value -->
+        <input type="hidden" id="book" name="book" value="{{ id }}">
+
+        <p>Are you sure you want to buy this book?</p>
+        <button type="button" class="btn btn-primary" id="confirmBuyButton">Yes</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='http://127.0.0.1:8000/home'">No</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('confirmBuyButton').addEventListener('click', function() {
+            const bookId = document.getElementById('book').value;
+
+            fetch('http://127.0.0.1:8000/buy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ book: bookId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message
+                    alert('Your book has been purchased successfully. Explore other books now.');
+                    // Redirect to the home page
+                    window.location.href = 'http://127.0.0.1:8000/home';
+                } else {
+                    alert('Failed to purchase book');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to purchase book');
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

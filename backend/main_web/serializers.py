@@ -34,3 +34,13 @@ class return_ser(serializers.ModelSerializer):
     class Meta:
         model = Borrow
         fields = '__all__'
+
+class buy_book_ser(serializers.ModelSerializer):
+    class Meta:
+        model=Buy_book
+        fields=['book']
+
+class History_ser(serializers.ModelSerializer):
+    class Meta:
+        model = History
+        fields = '__all__'

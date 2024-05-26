@@ -7,6 +7,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('accounts/profile/', RedirectView.as_view(url='http://127.0.0.1:8000/home', permanent=True)),
+     path('', RedirectView.as_view(url='http://127.0.0.1:8000/home', permanent=True)),
     path('home',home),
     path('book',Book_view.as_view()),
     path('add-book',Book_post.as_view()),
@@ -17,5 +18,9 @@ urlpatterns = [
     path('borrow_f/<int:pk>',borrow),
     path('return/<int:pk>', book_return),
     path('re-template',return_html),
+    path('buy',Buy.as_view()),
+    path('buy/<int:pk>',buy_func,name='buy-book'),
+    path('me',profile),
+    path('history',history.as_view(),)
 
 ]

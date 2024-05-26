@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .card-title {
+            margin-bottom: 10px;
+        }
+        .card-text {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>User Profile</h2>
+
+    <!-- User Details -->
+    <div class="card">
+        <div class="card-header">
+            User Details
+        </div>
+        <div class="card-body">
+            <div class="card-text">
+                <strong>Username:</strong> {{ request.user.username }}<br>
+                <strong>Email:</strong> {{ request.user.email }}<br>
+                <strong>Membership Status:</strong> {{ request.user.member.membership_status }}<br>
+                <strong>Membership Expiry Date:</strong> {{ request.user.member.membership_expiry_date }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Borrowed Books -->
+    <div class="card">
+        <div class="card-header">
+            Borrowed Books Pending Return
+        </div>
+        <div class="card-body">
+            {% if borrowed_books %}
+                {% for book in borrowed_books %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                            <p class="card-text">Author: {{ book.author }}</p>
+                            <p class="card-text">Due Date: {{ book.due_back }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="card-text">No borrowed books pending return.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

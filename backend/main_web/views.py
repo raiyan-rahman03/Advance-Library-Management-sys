@@ -18,6 +18,7 @@ from django.shortcuts import render
 from rest_framework.test import APIRequestFactory
 
 
+@login_required
 def home(request):
     # Step 1: Retrieve the search query from the URL parameters
     search_query = request.GET.get('search', '')
@@ -58,6 +59,7 @@ class Book_post(generics.CreateAPIView):
         return response
 
 
+@login_required
 def book_add_func(request):
     genre = Genre.objects.all()
     author = Author.objects.all()
@@ -69,12 +71,14 @@ class SingleBookAPIView(generics.RetrieveAPIView):
     serializer_class = BookSerializer
 
 
+@login_required
 def single_book(request, pk):
     response = requests.get(f'http://127.0.0.1:8000/book/{pk}/')
     print(response)
     return render(request, 'single_book.html', {'data': response.json()})
 
 
+@login_required
 def borrow(request, pk):
     try:
         book = Book.objects.get(id=pk)
@@ -102,6 +106,7 @@ class return_book(generics.RetrieveDestroyAPIView):
     serializer_class = return_ser
 
 
+
 @login_required
 def book_return(request, pk):
     user = request.user
@@ -111,8 +116,19 @@ def book_return(request, pk):
 
         # If the book is found, perform the return action (e.g., delete the borrowed book entry)
         book = borrowed_book.book
-        book.inventory = F('inventory') + 1
+        book.inventory += 1  # Increment the book's inventory
         book.save()
+
+        # Retrieve the corresponding Member instance for the current user
+        member = Member.objects.get(user=user)
+
+        # Log the return event in history
+        History.objects.create(
+            event_type='return',
+            member=member,
+            book=book,
+            details=f"{book.title} returned by {user.username}"
+        )
 
         borrowed_book.delete()
 
@@ -125,8 +141,44 @@ def book_return(request, pk):
         return HttpResponseNotFound()
 
 
+
+@login_required
 def return_html(request):
 
     borrow = Borrow.objects.filter(member=request.user.id)
 
     return render(request, 'return.html', {'data': borrow})
+
+def buy_func(request,pk):
+    try:
+        book = Book.objects.get(id=pk)
+    except Book.DoesNotExist:
+        # Handle the case where the book does not exist
+        # For example, you can return a 404 error page
+        return HttpResponseNotFound("The requested book does not exist.")
+
+    return render(request, 'buy.html', {'id': book.id})
+        
+    
+
+class Buy(generics.ListCreateAPIView):
+    queryset=Buy_book.objects.all()
+    serializer_class=buy_book_ser
+    def perform_create(self, serializer):
+        # Get the Member object associated with the current user
+        member = Member.objects.get(user=self.request.user)
+        # Assign the Member object to the serializer's 'member' field
+        serializer.save(member=member)
+
+
+def profile(request):
+    Data= History.objects.filter(member=request.user.id)
+    return render(request, 'profile.html',{'data':Data})
+    
+class history(generics.ListAPIView):
+    queryset =History.objects.all()
+    serializer_class = History_ser
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    
+    search_fields = [ 'event_type', 'details','timestamp']
+    ordering_fields = ['member', 'event_type','id']
