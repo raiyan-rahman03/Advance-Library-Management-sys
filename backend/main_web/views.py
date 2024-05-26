@@ -182,3 +182,9 @@ class history(generics.ListAPIView):
     
     search_fields = [ 'event_type', 'details','timestamp']
     ordering_fields = ['member', 'event_type','id']
+
+
+
+
+def admin_history(request):
+    return render(request, 'history.html')

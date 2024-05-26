@@ -21,6 +21,7 @@ urlpatterns = [
     path('buy',Buy.as_view()),
     path('buy/<int:pk>',buy_func,name='buy-book'),
     path('me',profile),
-    path('history',history.as_view(),)
+    path('history',history.as_view()),
+    path('history-panel', admin_history, name='admin_history'),
 
 ]

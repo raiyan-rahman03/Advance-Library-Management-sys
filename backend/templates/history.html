@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin History Panel</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #c6c6c6;
+    }
+    .container {
+      margin-top: 20px;
+    }
+    .history-table th, .history-table td {
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid black;
+    }
+    .filter-buttons .btn {
+      margin: 5px;
+    }
+    .details-cell {
+      text-align: left;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      background-color: #007bff;
+      color: white;
+      border-radius: 10px 10px 0 0;
+      text-align: center;
+    }
+    .card-body {
+      background-color: #ffffff;
+      border-radius: 0 0 10px 10px;
+    }
+    .form-control {
+      border-radius: 50px;
+      padding-left: 20px;
+    }
+    .filter-buttons .btn {
+      border-radius: 20px;
+    }
+    .table {
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    .table thead th {
+      background-color: #007bff;
+      color: white;
+      border: 1px solid black;
+    }
+    .table tbody tr:hover {
+      background-color: #cecece;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h1>Admin History Panel</h1>
+        <div class="text-right">
+          <button class="btn btn-success" onclick="sortByAscendingID()">Recent</button>
+          <button class="btn btn-success" onclick="sortByDescendingID()">Older</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4 offset-md-4">
+            <input type="text" id="searchField" class="form-control" placeholder="Search history...">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col text-center filter-buttons">
+            <button class="btn btn-primary" onclick="filterHistory('borrow')">Borrowed</button>
+            <button class="btn btn-secondary" onclick="filterHistory('buy')">Bought</button>
+            <button class="btn btn-success" onclick="filterHistory('add')">Added</button>
+            <button class="btn btn-warning" onclick="filterHistory('return')">Returned</button>
+            <button class="btn btn-info" onclick="filterHistory('update')">Updated</button>
+            <button class="btn btn-dark" onclick="filterHistory('')">All</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped history-table">
+            <thead>
+              <tr>
+                <th><a href="#" onclick="sortByField('id')">ID</a></th>
+                <th>Event Type</th>
+                <th>Details</th>
+                <th>Timestamp</th>
+                <th>Member</th>
+                <th>Book</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- History data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function fetchHistory(query = '') {
+      try {
+        const search = document.getElementById('searchField').value;
+        const response = await fetch(`http://127.0.0.1:8000/history?ordering=${query}&search=${search}`);
+        const data = await response.json();
+        console.log('Fetched data:', data);
+        const tableBody = document.getElementById('historyTableBody');
+        tableBody.innerHTML = '';
+
+        data.forEach(event => {
+          console.log('Processing event:', event);
+          const row = document.createElement('tr');
+          const details = typeof event.details === 'object' ? formatDetails(event.details) : event.details;
+          row.innerHTML = `
+            <td>${event.id}</td>
+            <td>${event.event_type}</td>
+            <td class="details-cell">${details}</td>
+            <td>${new Date(event.timestamp).toLocaleString()}</td>
+            <td>${event.member || 'N/A'}</td>
+            <td>${event.book || 'N/A'}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error fetching history:', error);
+      }
+    }
+
+    function formatDetails(details) {
+      let formatted = '<table class="table table-sm table-bordered">';
+      for (const key in details) {
+        if (details.hasOwnProperty(key)) {
+          formatted += `
+            <tr>
+              <td><strong>${key}:</strong></td>
+              <td>${details[key]}</td>
+            </tr>
+          `;
+        }
+      }
+      formatted += '</table>';
+      return formatted;
+    }
+
+    function filterHistory(eventType) {
+      const searchField = document.getElementById('searchField');
+      searchField.value = eventType;
+      fetchHistory('');
+    }
+
+    function sortByAscendingID() {
+      fetchHistory('id');
+    }
+
+    function sortByDescendingID() {
+      fetchHistory('-id');
+    }
+
+    function sortByField(field) {
+      fetchHistory(field);
+    }
+
+    document.getElementById('searchField').addEventListener('input', function() {
+      fetchHistory('');
+    });
+
+    window.onload = function() {
+      fetchHistory('');
+    }
+  </script>
+</body>
+</html>
