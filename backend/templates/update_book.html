@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Book</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        textarea {
+            min-height: 100px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="mb-4">Update Book</h2>
+    <form id="updateBookForm" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" class="form-control" value="{{ book.title }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <select id="author" name="author" class="form-control">
+                {% for author in authors %}
+                    <option value="{{ author.id }}" {% if book.author_id == author.id %}selected{% endif %}>{{ author.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="genre">Genre:</label>
+            <select id="genre" name="genre" class="form-control">
+                {% for genre in genres %}
+                    <option value="{{ genre.id }}" {% if book.genre_id == genre.id %}selected{% endif %}>{{ genre.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="publisher">Publisher:</label>
+            <input type="text" id="publisher" name="publisher" class="form-control" value="{{ book.publisher }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" class="form-control">{{ book.description }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="inventory">Inventory:</label>
+            <input type="number" id="inventory" name="inventory" class="form-control" value="{{ book.inventory }}" required>
+        </div>
+        
+        <input type="submit" value="Update Book" class="btn btn-primary">
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById('updateBookForm');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(form);
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+
+        const bookId = "{{ book.id }}";  // Embed the book.id as a string
+        fetch(`http://127.0.0.1:8000/book/up/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = 'http://127.0.0.1:8000/';
+            } else {
+                response.json().then(data => {
+                    alert('Failed to update book: ' + JSON.stringify(data));
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update book');
+        });
+    });
+});
+</script>
+
+</body>
+</html>

@@ -2,7 +2,7 @@ from django.db.models import F
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Book
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect ,get_object_or_404
 from rest_framework import generics, filters
 from .models import *
 from .serializers import *
@@ -11,7 +11,6 @@ from rest_framework.response import Response
 import requests
 from django.http import HttpResponseNotFound
 from rest_framework.request import Request
-
 
 
 from django.shortcuts import render
@@ -39,12 +38,11 @@ def home(request):
     return render(request, 'home.html', {'books': books_data, 'name': user_name})
 
 
-
 class Book_view(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ['title', 'author__name', 'genre__name','publisher']
+    search_fields = ['title', 'author__name', 'genre__name', 'publisher']
     ordering_fields = ['title', 'author__name', 'genre__name']
 
 
@@ -57,8 +55,19 @@ class Book_post(generics.CreateAPIView):
         if response.status_code == status.HTTP_201_CREATED:
             return Response({'message': 'Book added successfully'}, status=status.HTTP_201_CREATED)
         return response
+class Book_update(generics.RetrieveUpdateAPIView):
+    queryset = Book.objects.all()
+    serializer_class = book_post
 
-
+def update_book_html_view(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    authors = Author.objects.all()
+    genres = Genre.objects.all()
+    return render(request, 'update_book.html', {
+        'book': book,
+        'authors': authors,
+        'genres': genres
+    })
 @login_required
 def book_add_func(request):
     genre = Genre.objects.all()
@@ -106,7 +115,6 @@ class return_book(generics.RetrieveDestroyAPIView):
     serializer_class = return_ser
 
 
-
 @login_required
 def book_return(request, pk):
     user = request.user
@@ -141,7 +149,6 @@ def book_return(request, pk):
         return HttpResponseNotFound()
 
 
-
 @login_required
 def return_html(request):
 
@@ -149,7 +156,8 @@ def return_html(request):
 
     return render(request, 'return.html', {'data': borrow})
 
-def buy_func(request,pk):
+
+def buy_func(request, pk):
     try:
         book = Book.objects.get(id=pk)
     except Book.DoesNotExist:
@@ -158,12 +166,12 @@ def buy_func(request,pk):
         return HttpResponseNotFound("The requested book does not exist.")
 
     return render(request, 'buy.html', {'id': book.id})
-        
-    
+
 
 class Buy(generics.ListCreateAPIView):
-    queryset=Buy_book.objects.all()
-    serializer_class=buy_book_ser
+    queryset = Buy_book.objects.all()
+    serializer_class = buy_book_ser
+
     def perform_create(self, serializer):
         # Get the Member object associated with the current user
         member = Member.objects.get(user=self.request.user)
@@ -172,18 +180,17 @@ class Buy(generics.ListCreateAPIView):
 
 
 def profile(request):
-    Data= History.objects.filter(member=request.user.id)
-    return render(request, 'profile.html',{'data':Data})
-    
+    Data = History.objects.filter(member=request.user.id)
+    return render(request, 'profile.html', {'data': Data})
+
+
 class history(generics.ListAPIView):
-    queryset =History.objects.all()
+    queryset = History.objects.all()
     serializer_class = History_ser
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    
-    search_fields = [ 'event_type', 'details','timestamp']
-    ordering_fields = ['member', 'event_type','id']
 
-
+    search_fields = ['event_type', 'details', 'timestamp']
+    ordering_fields = ['member', 'event_type', 'id']
 
 
 def admin_history(request):

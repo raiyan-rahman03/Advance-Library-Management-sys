@@ -81,7 +81,8 @@ class Book(models.Model):
     """
     title = models.CharField(max_length=200)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, default=0)
+    genre = models.ForeignKey(
+        Genre, on_delete=models.SET_NULL, null=True, default=0)
     publisher = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     inventory = models.IntegerField(
@@ -134,7 +135,8 @@ class Member(models.Model):
     Represents a library member linked to a User, with membership status and expiry date.
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    membership_status = models.CharField(max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive')])
+    membership_status = models.CharField(
+        max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive')])
     membership_expiry_date = models.DateField()
 
     def save(self, *args, **kwargs):
@@ -184,11 +186,12 @@ class Borrow(models.Model):
         if self.borrowed_at and (self.due_back - self.borrowed_at).days > 10:
             raise ValidationError("Borrowing period cannot exceed 10 days.")
 
-        existing_borrow = Borrow.objects.filter(book=self.book, member=self.member).exists()
+        existing_borrow = Borrow.objects.filter(
+            book=self.book, member=self.member).exists()
         if existing_borrow:
             raise ValidationError("You have already borrowed this book.")
-        inventory =self.book.inventory
-        if int(inventory) <1:
+        inventory = self.book.inventory
+        if int(inventory) < 1:
             raise ValidationError("Book is not available for borrowing.")
 
     def save(self, *args, **kwargs):
@@ -236,14 +239,13 @@ class Buy_book(models.Model):
     price = models.IntegerField(null=False, validators=[MinValueValidator(1)])
 
     def clean(self):
-            
-        inventory =self.book.inventory
-        if int(inventory) <1:
+
+        inventory = self.book.inventory
+        if int(inventory) < 1:
             raise ValidationError("Book is not available for buying.")
-        
-       
+
     def save(self, *args, **kwargs):
-        self.clean() 
+        self.clean()
         """
         Overrides the save method to log history events.
         Logs 'buy' event when a new book purchase is created, and 'update' event when an existing purchase is updated.
@@ -290,8 +292,10 @@ class History(models.Model):
         ('update', 'Updated')
     ]
     event_type = models.CharField(max_length=10, choices=EVENT_TYPES)
-    member = models.ForeignKey(Member, on_delete=models.PROTECT, null=True, blank=True)
-    book = models.ForeignKey(Book, on_delete=models.PROTECT, null=True, blank=True)
+    member = models.ForeignKey(
+        Member, on_delete=models.PROTECT, null=True, blank=True)
+    book = models.ForeignKey(
+        Book, on_delete=models.PROTECT, null=True, blank=True)
     details = models.JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
