@@ -44,3 +44,11 @@ class History_ser(serializers.ModelSerializer):
     class Meta:
         model = History
         fields = '__all__'
+
+
+class EmailSerializer(serializers.Serializer):
+    subject = serializers.CharField(max_length=255)
+    message = serializers.CharField()
+    recipient_list = serializers.ListField(
+        child=serializers.EmailField()
+    )

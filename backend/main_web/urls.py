@@ -24,5 +24,5 @@ urlpatterns = [
     path('me',profile),
     path('history',history.as_view()),
     path('history-panel', admin_history, name='admin_history'),
-
+    path('email/', SendEmailView.as_view(), name='send-email'),
 ]

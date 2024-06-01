@@ -1,8 +1,14 @@
+from .serializers import buy_book_ser, EmailSerializer
+from .models import Buy_book, Member
+from rest_framework import generics, status
+from django.core.mail import send_mail
+from .serializers import EmailSerializer
+from rest_framework.views import APIView
 from django.db.models import F
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Book
-from django.shortcuts import render, redirect ,get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import generics, filters
 from .models import *
 from .serializers import *
@@ -11,8 +17,6 @@ from rest_framework.response import Response
 import requests
 from django.http import HttpResponseNotFound
 from rest_framework.request import Request
-
-
 from django.shortcuts import render
 from rest_framework.test import APIRequestFactory
 
@@ -55,9 +59,12 @@ class Book_post(generics.CreateAPIView):
         if response.status_code == status.HTTP_201_CREATED:
             return Response({'message': 'Book added successfully'}, status=status.HTTP_201_CREATED)
         return response
+
+
 class Book_update(generics.RetrieveUpdateAPIView):
     queryset = Book.objects.all()
     serializer_class = book_post
+
 
 def update_book_html_view(request, pk):
     book = get_object_or_404(Book, pk=pk)
@@ -68,6 +75,8 @@ def update_book_html_view(request, pk):
         'authors': authors,
         'genres': genres
     })
+
+
 @login_required
 def book_add_func(request):
     genre = Genre.objects.all()
@@ -178,6 +187,36 @@ class Buy(generics.ListCreateAPIView):
         # Assign the Member object to the serializer's 'member' field
         serializer.save(member=member)
 
+        # Define email subject and message
+        subject = 'Purchase Confirmation'
+        message = f'Thank you for your purchase, {member.user.username}!'
+        recipient_list = [self.request.user.email]
+
+        # Prepare data for email
+        email_data = {
+            'subject': subject,
+            'message': message,
+            'recipient_list': recipient_list
+        }
+
+        # Create a request factory
+        factory = APIRequestFactory()
+
+        # Create a POST request
+        request = factory.post('send-email/', email_data, format='json')
+
+        # Force authentication with the current user
+        request.user = self.request.user
+
+        # Get the response from SendEmailView
+        view = SendEmailView.as_view()
+        response = view(request)
+
+        # Check response status
+        if response.status_code != status.HTTP_200_OK:
+            raise Exception('Failed to send email')
+
+
 
 def profile(request):
     Data = History.objects.filter(member=request.user.id)
@@ -195,3 +234,25 @@ class history(generics.ListAPIView):
 
 def admin_history(request):
     return render(request, 'history.html')
+
+
+
+
+def mailed_person(request):
+
+    pass
+
+
+class SendEmailView(APIView):
+    def post(self, request):
+        serializer = EmailSerializer(data=request.data)
+        if serializer.is_valid():
+            subject = serializer.validated_data['subject']
+            message = serializer.validated_data['message']
+            recipient_list = serializer.validated_data['recipient_list']
+            email_from = 'mdraiyanrahman03@gmail.com'
+
+            send_mail(subject, message, email_from, recipient_list)
+
+            return Response({'status': 'Email sent'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
