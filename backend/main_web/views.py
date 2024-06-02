@@ -115,13 +115,101 @@ class Borrow_view(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Get the Member object associated with the current user
         member = Member.objects.get(user=self.request.user)
-        # Assign the Member object to the serializer's 'member' field
-        serializer.save(member=member)
+
+        # Save the borrow instance and assign the member to it
+        borrow_instance = serializer.save(member=member)
+
+        # Retrieve the related book and due date information
+        book = borrow_instance.book
+        due_date = borrow_instance.due_back
+
+        # Format the due date nicely
+        formatted_due_date = due_date.strftime('%B %d, %Y')
+
+        # Define the email subject and message
+        subject = 'Borrow Confirmation'
+        message = (
+            f'Dear {member.user.username},\n\n'
+            f'Thank you for borrowing the book "{book.title}" by {book.author}.\n\n'
+            f'Your due date for returning this book is {formatted_due_date}.\n\n'
+            f'We hope you enjoy reading it.\n\n'
+            f'Best regards,\n'
+            f'The Library Team'
+        )
+        recipient_list = [self.request.user.email]
+
+        # Prepare data for email
+        email_data = {
+            'subject': subject,
+            'message': message,
+            'recipient_list': recipient_list
+        }
+
+        # Create a request factory
+        factory = APIRequestFactory()
+
+        # Create a POST request
+        request = factory.post(
+            'http://127.0.0.1:8000/email/', email_data, format='json')
+
+        # Force authentication with the current user
+        request.user = self.request.user
+
+        # Get the response from SendEmailView
+        view = SendEmailView.as_view()
+        response = view(request)
+
+        # Check response status
+        if response.status_code != status.HTTP_200_OK:
+            raise Exception('Failed to send email')
 
 
 class return_book(generics.RetrieveDestroyAPIView):
     queryset = Borrow.objects.all()
     serializer_class = return_ser
+
+    def perform_destroy(self, instance):
+        # Retrieve the book details before deleting the instance
+        book_title = instance.book.title
+        book_author = instance.book.author
+
+        # Call the original destroy method to delete the instance
+        instance.delete()
+
+        # Define email subject and message
+        subject = 'Return Confirmation'
+        message = (
+            f'Dear {self.request.user.username},\n\n'
+            f'Thank you for returning the book "{book_title} by {book_author}"!\n\n'
+            f'We hope you enjoyed reading it.\n\n'
+            f'Best regards,\n'
+            f'The Library Team'
+        )
+        recipient_list = [self.request.user.email]
+
+        # Prepare data for email
+        email_data = {
+            'subject': subject,
+            'message': message,
+            'recipient_list': recipient_list
+        }
+
+        # Create a request factory
+        factory = APIRequestFactory()
+
+        # Create a POST request
+        request = factory.post('send-email/', email_data, format='json')
+
+        # Force authentication with the current user
+        request.user = self.request.user
+
+        # Get the response from SendEmailView
+        view = SendEmailView.as_view()
+        response = view(request)
+
+        # Check response status
+        if response.status_code != status.HTTP_200_OK:
+            raise Exception('Failed to send email')
 
 
 @login_required
@@ -130,15 +218,12 @@ def book_return(request, pk):
     try:
         # Attempt to retrieve the borrowed book entry
         borrowed_book = Borrow.objects.get(member=user.id, book=pk)
-
         # If the book is found, perform the return action (e.g., delete the borrowed book entry)
         book = borrowed_book.book
         book.inventory += 1  # Increment the book's inventory
         book.save()
-
         # Retrieve the corresponding Member instance for the current user
         member = Member.objects.get(user=user)
-
         # Log the return event in history
         History.objects.create(
             event_type='return',
@@ -146,11 +231,47 @@ def book_return(request, pk):
             book=book,
             details=f"{book.title} returned by {user.username}"
         )
-
         borrowed_book.delete()
+        messages.success(request, 'Your book has been returned successfully!')
+
+        # Define email subject and message
+        subject = 'Return Confirmation'
+        message = (
+            f'Dear {user.username},\n\n'
+            f'Thank you for returning the book "{book.title}" by {book.author}!\n\n'
+            f'We hope you enjoyed reading it.\n\n'
+            f'Best regards,\n'
+            f'The Library Team'
+        )
+        recipient_list = [user.email]
+
+        # Prepare data for email
+        email_data = {
+            'subject': subject,
+            'message': message,
+            'recipient_list': recipient_list
+        }
+
+        # Create a request factory
+        factory = APIRequestFactory()
+
+        # Create a POST request
+        request = factory.post(
+            'http://127.0.0.1:8000/email/', email_data, format='json')
+
+        # Force authentication with the current user
+        request.user = user
+
+        # Get the response from SendEmailView
+        view = SendEmailView.as_view()
+        response = view(request)
+
+        # Check response status
+        if response.status_code != status.HTTP_200_OK:
+            raise Exception('Failed to send email')
 
         # Add a success message
-        messages.success(request, 'Your book has been returned successfully!')
+
         # Redirect the user to the home page
         return redirect('http://127.0.0.1:8000/home')
     except Borrow.DoesNotExist:
@@ -203,7 +324,8 @@ class Buy(generics.ListCreateAPIView):
         factory = APIRequestFactory()
 
         # Create a POST request
-        request = factory.post('send-email/', email_data, format='json')
+        request = factory.post(
+            'http://127.0.0.1:8000/email/', email_data, format='json')
 
         # Force authentication with the current user
         request.user = self.request.user
@@ -215,7 +337,6 @@ class Buy(generics.ListCreateAPIView):
         # Check response status
         if response.status_code != status.HTTP_200_OK:
             raise Exception('Failed to send email')
-
 
 
 def profile(request):
@@ -234,8 +355,6 @@ class history(generics.ListAPIView):
 
 def admin_history(request):
     return render(request, 'history.html')
-
-
 
 
 def mailed_person(request):
