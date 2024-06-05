@@ -22,6 +22,7 @@ from rest_framework.test import APIRequestFactory
 from collections import Counter
 
 
+
 @login_required
 def home(request):
     # Step 1: Retrieve the search query from the URL parameters
@@ -34,63 +35,63 @@ def home(request):
     drf_request = factory.get('/book/', {'search': search_query})
     top = factory.get('http://127.0.0.1:8000/history?search=borrow')
 
+    # Step 4: Fetch history data from API and filter by user
     filtered_history = history.as_view()(top).data
     user_borrow = [
         item for item in filtered_history if item['member'] == request.user.member.id]
 
-    print(f'user {user_borrow}')
-
-    # Count occurrences of each book ID in the filtered history data
+    # Step 5: Count occurrences of each book ID in the filtered history data
     book_counts = Counter(item['book'] for item in filtered_history)
-    print(book_counts)
     book_counts_user = Counter(item['book'] for item in user_borrow)
 
-    # Get the top 5 most borrowed book IDs
+    # Step 6: Get the top 5 most borrowed book IDs
     top_5_books = [book_id for book_id, count in book_counts.most_common(5)]
     top_5_books_user = [book_id for book_id,
                         count in book_counts_user.most_common(5)]
-    # Fetch the book details for these top 5 book IDs
+
+    # Step 7: Fetch book details for top 5 books
     top_books_details = Book.objects.filter(id__in=top_5_books)
-
     top_books_details_user = Book.objects.filter(id__in=top_5_books_user)
-    print(f'top books by the user borrowed {top_books_details_user}')
 
+    # Step 8: Extract genres from top user-borrowed books
     genres = [book.genre for book in top_books_details_user]
     genre_ids = [genre.id for genre in genres]
 
-    print(f' genre {genre_ids}')
+    # Step 9: Find suggested books based on user's top genres
+    suggested_books = Book.objects.filter(genre__in=set(genre_ids))
 
-    sugested = Book.objects.filter(genre__in=set(genre_ids))
-    print(f'data {sugested}')
-    filtered_book_ids = sugested.values_list('id', flat=True)
-
-# Filter the history data to include only the books with these IDs
+    # Step 10: Filter history data to include only suggested books
+    filtered_book_ids = suggested_books.values_list('id', flat=True)
     filtered_history_books = [
         item for item in filtered_history if item['book'] in filtered_book_ids]
-    print(f'mmmmmmmmmmm {filtered_history_books}')
 
+    # Step 11: Count occurrences of each book ID in the filtered history of suggested books
     book_counts_genre = Counter(item['book']
                                 for item in filtered_history_books)
-    print(book_counts_genre)
+   
 
+    # Step 12: Get the top 5 most borrowed book IDs in suggested genres
     top_5_books_in_genre = [book_id for book_id,
                             count in book_counts_genre.most_common(5)]
-    print(str(top_5_books_in_genre))
-    top_sugestion = Book.objects.filter(id__in=top_5_books_in_genre)
+   
 
-    sugestion = BookSerializer(top_sugestion, many=True).data
+    # Step 13: Fetch top suggestion books
+    top_suggestion_books = Book.objects.filter(id__in=top_5_books_in_genre)
 
-    # Serialize the book details
+    # Step 14: Serialize suggestion books
+    suggestion_data = BookSerializer(top_suggestion_books, many=True).data
+
+    # Step 15: Serialize top books data
     top_books_data = BookSerializer(top_books_details, many=True).data
 
-    # Step 4: Call the DRF view with the DRF request and retrieve the filtered data
+    # Step 16: Call the DRF view with the DRF request and retrieve the filtered data
     books_data = Book_view.as_view()(drf_request).data
 
-    # Step 5: Get the username of the logged-in user
+    # Step 17: Get the username of the logged-in user
     user_name = request.user.username
 
-    # Step 6: Pass the serialized data and username to the template context
-    return render(request, 'home.html', {'books': books_data, 'name': user_name, 'top_picks': top_books_data, 'sugestion': sugestion})
+    # Step 18: Pass the serialized data and username to the template context
+    return render(request, 'home.html', {'books': books_data, 'name': user_name, 'top_picks': top_books_data, 'sugestion': suggestion_data})
 
 
 class Book_view(generics.ListAPIView):
