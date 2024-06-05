@@ -10,10 +10,15 @@
     <style>
         body {
             padding-top: 50px;
+            background-color: #f8f9fa;
         }
         .book-card {
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .top-pick-card, .suggested-card {
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
         .card-body {
             padding: 20px;
@@ -21,11 +26,26 @@
         .btn {
             margin-right: 10px;
         }
-        /* Custom CSS for positioning */
         .return-btn-container {
             position: absolute;
             top: 20px;
             right: 20px;
+        }
+        .top-picks-title {
+            margin-top: 50px;
+        }
+        .carousel-item {
+            transition: transform 0.55s ease, opacity 0.06s ease-in-out;
+        }
+        .carousel-item img {
+            max-height: 400px;
+            margin: 0 auto;
+        }
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            background-color: #000;
+            border-radius: 50%;
+            padding: 10px;
         }
     </style>
 </head>
@@ -42,21 +62,85 @@
 
     <div class="container">
         <h2>Welcome {{ name }}</h2>
-        <!-- Return a Book button in the top-right corner -->
-
-        <h1>Book List</h1>
         <div class="return-btn-container">
             <a href="http://127.0.0.1:8000/accounts/logout" class="btn btn-dark">Logout</a>
-            <a href="http://127.0.0.1:8000/add" class="btn btn-primary">Add a Book</a> <!-- New button -->
+            <a href="http://127.0.0.1:8000/add" class="btn btn-primary">Add a Book</a>
             <a href="http://127.0.0.1:8000/history-panel" class="btn btn-info">History Panel</a>
             <a href="http://127.0.0.1:8000/re-template" class="btn btn-danger">Return a Book</a>
         </div>
 
+        <!-- Top Picks Section -->
+        <h1>Top Picks</h1>
+        <div id="topPicksCarousel" class="carousel slide" data-ride="carousel" data-interval="3000">
+            <div class="carousel-inner">
+                {% for book in top_picks %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card top-pick-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ book.title }}</h5>
+                                    <p class="card-text">by {{ book.author.name }}</p>
+                                    <p class="card-text"><strong>Genre:</strong> {{ book.genre.name }}</p>
+                                    <p class="card-text"><strong>Publisher:</strong> {{ book.publisher }}</p>
+                                    <div class="btn-group" role="group" aria-label="Book Actions">
+                                        <a href="{% url 'single_book' pk=book.id %}" class="btn btn-info">See More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#topPicksCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#topPicksCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+
+        <!-- Suggested Books Section -->
+        <h1>Suggested Books</h1>
+        <div id="suggestedBooksCarousel" class="carousel slide" data-ride="carousel" data-interval="3000">
+            <div class="carousel-inner">
+                {% for book in sugestion %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card suggested-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ book.title }}</h5>
+                                    <p class="card-text">by {{ book.author.name }}</p>
+                                    <p class="card-text"><strong>Genre:</strong> {{ book.genre.name }}</p>
+                                    <p class="card-text"><strong>Publisher:</strong> {{ book.publisher }}</p>
+                                    <div class="btn-group" role="group" aria-label="Book Actions">
+                                        <a href="{% url 'single_book' pk=book.id %}" class="btn btn-info">See More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#suggestedBooksCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#suggestedBooksCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+
+        <h1>Book List</h1>
         <!-- Search form -->
         <form id="search-form" class="form-inline mb-4">
-            <!-- Increase the size of the input field -->
-            <input id="search-input" class="form-control mr-sm-2" type="search" placeholder="Search By Title , Author , Genre , Publisher" style="width: 400px;" aria-label="Search">
-            <!-- The rest of your form remains unchanged -->
+            <input id="search-input" class="form-control mr-sm-2" type="search" placeholder="Search By Title, Author, Genre, Publisher" style="width: 400px;" aria-label="Search">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
 
@@ -83,58 +167,60 @@
         </div>
     </div>
 
-    <!-- JavaScript for displaying the pop-up message and handling search -->
-<!-- JavaScript for displaying the pop-up message and handling search -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Handle the search form submission
-        const searchForm = document.getElementById('search-form');
-        const searchInput = document.getElementById('search-input');
-        const booksContainer = document.getElementById('books-container');
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-        searchForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const query = searchInput.value.trim(); // Trim the search query
-            if (query !== '') { // Check if the search query is not empty
-                fetch(`http://127.0.0.1:8000/book?search=${query}`) // Corrected endpoint
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        booksContainer.innerHTML = '';
-                        if (data.length > 0) {
-                            data.forEach(book => {
-                                booksContainer.innerHTML += `
-                                    <div class="col-md-4 book-item">
-                                        <div class="card book-card">
-                                            <div class="card-body">
-                                                <h5 class="card-title">${book.title}</h5>
-                                                <p class="card-text">by ${book.author.name}</p>
-                                                <p class="card-text"><strong>Genre:</strong> ${book.genre.name}</p>
-                                                <p class="card-text"><strong>Publisher:</strong> ${book.publisher}</p>
-                                                <div class="btn-group" role="group" aria-label="Book Actions">
-                                                    <a href="/book/about/${book.id}/" class="btn btn-info">See More</a>
+    <!-- JavaScript for displaying the pop-up message and handling search -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Handle the search form submission
+            const searchForm = document.getElementById('search-form');
+            const searchInput = document.getElementById('search-input');
+            const booksContainer = document.getElementById('books-container');
+
+            searchForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const query = searchInput.value.trim(); // Trim the search query
+                if (query !== '') { // Check if the search query is not empty
+                    fetch(`http://127.0.0.1:8000/book?search=${query}`) // Corrected endpoint
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            booksContainer.innerHTML = '';
+                            if (data.length > 0) {
+                                data.forEach(book => {
+                                    booksContainer.innerHTML += `
+                                        <div class="col-md-4 book-item">
+                                            <div class="card book-card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">${book.title}</h5>
+                                                    <p class="card-text">by ${book.author.name}</p>
+                                                    <p class="card-text"><strong>Genre:</strong> ${book.genre.name}</p>
+                                                    <p class="card-text"><strong>Publisher:</strong> ${book.publisher}</p>
+                                                    <div class="btn-group" role="group" aria-label="Book Actions">
+                                                        <a href="/book/about/${book.id}/" class="btn btn-info">See More</a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                `;
-                            });
-                        } else {
-                            booksContainer.innerHTML = '<div class="col"><p>No books available</p></div>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching data:', error);
-                    });
-            }
+                                    `;
+                                });
+                            } else {
+                                booksContainer.innerHTML = '<div class="col"><p>No books available</p></div>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                        });
+                }
+            });
         });
-    });
-</script>
-
-
+    </script>
 </body>
 </html>

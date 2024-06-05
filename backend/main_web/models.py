@@ -139,6 +139,8 @@ class Member(models.Model):
         max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive')])
     membership_expiry_date = models.DateField()
 
+
+
     def save(self, *args, **kwargs):
         """
         Overrides the save method to log history events.

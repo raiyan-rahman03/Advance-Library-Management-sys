@@ -19,6 +19,7 @@ from django.http import HttpResponseNotFound
 from rest_framework.request import Request
 from django.shortcuts import render
 from rest_framework.test import APIRequestFactory
+from collections import Counter
 
 
 @login_required
@@ -31,6 +32,56 @@ def home(request):
 
     # Step 3: Create a DRF request with the search query
     drf_request = factory.get('/book/', {'search': search_query})
+    top = factory.get('http://127.0.0.1:8000/history?search=borrow')
+
+    filtered_history = history.as_view()(top).data
+    user_borrow = [
+        item for item in filtered_history if item['member'] == request.user.member.id]
+
+    print(f'user {user_borrow}')
+
+    # Count occurrences of each book ID in the filtered history data
+    book_counts = Counter(item['book'] for item in filtered_history)
+    print(book_counts)
+    book_counts_user = Counter(item['book'] for item in user_borrow)
+
+    # Get the top 5 most borrowed book IDs
+    top_5_books = [book_id for book_id, count in book_counts.most_common(5)]
+    top_5_books_user = [book_id for book_id,
+                        count in book_counts_user.most_common(5)]
+    # Fetch the book details for these top 5 book IDs
+    top_books_details = Book.objects.filter(id__in=top_5_books)
+
+    top_books_details_user = Book.objects.filter(id__in=top_5_books_user)
+    print(f'top books by the user borrowed {top_books_details_user}')
+
+    genres = [book.genre for book in top_books_details_user]
+    genre_ids = [genre.id for genre in genres]
+
+    print(f' genre {genre_ids}')
+
+    sugested = Book.objects.filter(genre__in=set(genre_ids))
+    print(f'data {sugested}')
+    filtered_book_ids = sugested.values_list('id', flat=True)
+
+# Filter the history data to include only the books with these IDs
+    filtered_history_books = [
+        item for item in filtered_history if item['book'] in filtered_book_ids]
+    print(f'mmmmmmmmmmm {filtered_history_books}')
+
+    book_counts_genre = Counter(item['book']
+                                for item in filtered_history_books)
+    print(book_counts_genre)
+
+    top_5_books_in_genre = [book_id for book_id,
+                            count in book_counts_genre.most_common(5)]
+    print(str(top_5_books_in_genre))
+    top_sugestion = Book.objects.filter(id__in=top_5_books_in_genre)
+
+    sugestion = BookSerializer(top_sugestion, many=True).data
+
+    # Serialize the book details
+    top_books_data = BookSerializer(top_books_details, many=True).data
 
     # Step 4: Call the DRF view with the DRF request and retrieve the filtered data
     books_data = Book_view.as_view()(drf_request).data
@@ -39,7 +90,7 @@ def home(request):
     user_name = request.user.username
 
     # Step 6: Pass the serialized data and username to the template context
-    return render(request, 'home.html', {'books': books_data, 'name': user_name})
+    return render(request, 'home.html', {'books': books_data, 'name': user_name, 'top_picks': top_books_data, 'sugestion': sugestion})
 
 
 class Book_view(generics.ListAPIView):
